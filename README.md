@@ -1,8 +1,8 @@
-# Linux named userspace semaphore wrapper for Go
+# go-semaphore
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/dangerousHobo/go-semaphore/blob/master/COPYING)
 
-Provides the same functionality as the C interface.
+This library provides a wrapper around the C interface for named userspace semaphores on Linux.
 
 ## sem_overview(7)
 
