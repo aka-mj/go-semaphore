@@ -3,7 +3,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/dangerousHobo/go-semaphore/blob/master/COPYING)
 [![Build Status](https://travis-ci.org/dangerousHobo/go-semaphore.svg?branch=master)](https://travis-ci.org/dangerousHobo/go-semaphore)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dangerousHobo/go-semaphore)](https://goreportcard.com/report/github.com/dangerousHobo/go-semaphore)
-
+[![Coverage Status](https://coveralls.io/repos/github/dangerousHobo/go-semaphore/badge.svg?branch=master)](https://coveralls.io/github/dangerousHobo/go-semaphore?branch=master)
 
 This library provides a wrapper around the C interface for named userspace semaphores on Linux.
 
