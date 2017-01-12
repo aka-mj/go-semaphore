@@ -1,6 +1,7 @@
 # go-semaphore
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/dangerousHobo/go-semaphore/blob/master/COPYING)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dangerousHobo/go-semaphore)](https://goreportcard.com/report/github.com/dangerousHobo/go-semaphore)
 
 This library provides a wrapper around the C interface for named userspace semaphores on Linux.
 
@@ -29,4 +30,3 @@ This library provides a wrapper around the C interface for named userspace semap
         ished using the semaphore, it can use sem_close(3)  to  close  the  sema‐
         phore.   When  all processes have finished using the semaphore, it can be
         removed from the system using sem_unlink(3).
-
