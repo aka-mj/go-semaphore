@@ -91,26 +91,124 @@ func Test_SemPostFail(t *testing.T) {
 	}
 }
 
-func Test_SemTimedWait(t *testing.T) {
+func Test_SemTimedWait_nowait(t *testing.T) {
 	var sem Semaphore
 	sem.Open("/testsem", 0644, 1)
-	sem.Wait()
+	if err := sem.TimedWait(1 * time.Second); err != nil {
+		t.Fatalf("Should not have timedout: %v", err)
+	}
+	sem.Close()
+}
 
+func Test_SemTimedWait_wait(t *testing.T) {
+	var sem Semaphore
+	sem.Open("/testsem_wait", 0644, 1)
+	sem.Wait()
+	v, _ := sem.GetValue()
+	fmt.Println(v)
+
+	end := make(chan error, 1)
 	go func() {
 		var sem2 Semaphore
-		sem2.Open("/testsem", 0644, 1)
-		i, _ := sem2.GetValue()
-		fmt.Printf(">> %v\n", i)
-		err := sem2.TimedWait(11 * time.Second)
-		if err != nil {
-			t.Fatalf("Failed: %v", err)
-		} else {
-			sem2.Post()
-		}
+		sem2.Open("/testsem_wait", 0644, 1)
+		end <- sem2.TimedWait(2 * time.Second)
 		sem2.Close()
 	}()
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 	sem.Post()
+	err := <-end
 	sem.Close()
+	sem.Unlink()
+	if err != nil {
+		t.Fatalf("Should not have timedout: %v", err)
+	}
+}
+
+func Test_SemTimedWait_timeout(t *testing.T) {
+	var sem Semaphore
+	sem.Open("/testsem_wait", 0644, 1)
+	sem.Wait()
+	v, _ := sem.GetValue()
+	fmt.Println(v)
+
+	end := make(chan error, 1)
+	go func() {
+		var sem2 Semaphore
+		sem2.Open("/testsem_wait", 0644, 1)
+		end <- sem2.TimedWait(1 * time.Second)
+		sem2.Close()
+	}()
+
+	time.Sleep(2 * time.Second)
+	sem.Post()
+	err := <-end
+	sem.Close()
+	sem.Unlink()
+	if err == nil {
+		t.Fatalf("Should have timedout: %v", err)
+	}
+}
+
+func Test_SemDoubleClose(t *testing.T) {
+	var sem Semaphore
+	if err := sem.Open("/testsem", 0644, 1); err != nil {
+		t.Fatalf("Failed to open: %v", err)
+	}
+
+	if err := sem.Close(); err != nil {
+		t.Fatalf("Failed to close: %v", err)
+	}
+	if err := sem.Close(); err == nil {
+		t.Fatalf("Should have received error: %v", err)
+	}
+}
+
+func Test_SemDoubleUnlink(t *testing.T) {
+	var sem Semaphore
+	if err := sem.Open("/testsem", 0644, 1); err != nil {
+		t.Fatalf("Failed to open: %v", err)
+	}
+
+	if err := sem.Close(); err != nil {
+		t.Fatalf("Failed to close: %v", err)
+	}
+
+	if err := sem.Unlink(); err != nil {
+		t.Fatalf("Failed to unlink: %v", err)
+	}
+	if err := sem.Unlink(); err == nil {
+		t.Fatalf("Should have received error: %v", err)
+	}
+}
+
+func Test_isSemaphoreInitialized(t *testing.T) {
+	var sem Semaphore
+	if err := sem.Close(); err == nil {
+		t.Fatalf("Should have recived error: %v", err)
+	}
+	if _, err := sem.GetValue(); err == nil {
+		t.Fatalf("Should have recived error: %v", err)
+	}
+	if err := sem.Post(); err == nil {
+		t.Fatalf("Should have recived error: %v", err)
+	}
+	if err := sem.Wait(); err == nil {
+		t.Fatalf("Should have recived error: %v", err)
+	}
+	if err := sem.TryWait(); err == nil {
+		t.Fatalf("Should have recived error: %v", err)
+	}
+}
+
+func Test_longName(t *testing.T) {
+	var sem Semaphore
+	name := make([]byte, 256)
+	name[0] = '/'
+	for i := 1; i < 256; i++ {
+		name[i] = 'X'
+	}
+	if err := sem.Open(string(name), 0644, 1); err == nil {
+		t.Fatalf("Failed to open: %v", err)
+	}
 }

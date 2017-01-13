@@ -1,6 +1,5 @@
-// Project:         C1515
 // Author:          Michael John
-// Copyright:       2014-2016 Crown Equipment Corp.
+// Copyright:       2014-2017 Crown Equipment Corp.
 
 // Package semaphore provides an interface to named userspace semaphores.
 package semaphore
