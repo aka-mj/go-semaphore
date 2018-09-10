@@ -1,5 +1,8 @@
+// Project:         C1515
 // Author:          Michael John
-// Copyright:       2014-2017 Crown Equipment Corp.
+// Copyright:       2014-2018 Crown Equipment Corp.
+
+// +build linux,cgo
 
 // Package semaphore provides an interface to named userspace semaphores.
 package semaphore
@@ -18,10 +21,13 @@ import (
 // #include <sys/types.h>
 // #include <semaphore.h>
 // #include <time.h>
+// #ifndef GO_SEM_LIB_
+// #define GO_SEM_LIB_
 // sem_t* Go_sem_open(const char *name, int oflag, mode_t mode, unsigned int value)
 // {
 //		return sem_open(name, oflag, mode, value);
 // }
+// #endif
 import "C"
 
 type Semaphore struct {
