@@ -2,7 +2,7 @@
 // Author:          Michael John
 // Copyright:       2014-2018 Crown Equipment Corp.
 
-// +build linux,cgo
+//go:build (linux || darwin) && cgo
 
 // Package semaphore provides an interface to named userspace semaphores.
 package semaphore
@@ -74,20 +74,6 @@ func (s *Semaphore) Close() error {
 	}
 	s.sem = nil
 	return nil
-}
-
-// GetValue returns the current value of the semaphore.
-func (s *Semaphore) GetValue() (int, error) {
-	if ok, err := s.isSemaphoreInitialized(); !ok {
-		return 0, err
-	}
-
-	var val C.int
-	ret, err := C.sem_getvalue(s.sem, &val)
-	if ret != 0 {
-		return int(ret), err
-	}
-	return int(val), nil
 }
 
 // Post increments the semaphore.
