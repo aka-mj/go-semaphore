@@ -1,3 +1,3 @@
-module go-semaphore
+module github.com/aka-mj/go-semaphore
 
-go 1.23
+go 1.22
