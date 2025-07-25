@@ -136,10 +136,10 @@ func Test_SemTimedWait_wait_with_short_gap(t *testing.T) {
 	sem.Post()
 	err := <-end
 	semWaitDuration := <-semWait
-	if semWaitDuration < 500 * time.Millisecond {
+	if semWaitDuration < 500*time.Millisecond {
 		t.Fatalf("Impossible we still slept for 500 Milliseconds prior to releasing semaphore: sem wait was %s", semWaitDuration.String())
 	}
-	if semWaitDuration > 550 * time.Millisecond {
+	if semWaitDuration > 550*time.Millisecond {
 		t.Fatalf("It took too long to acquire semaphore. We still slept for 500 Milliseconds prior to releasing semaphore: sem wait was %s", semWaitDuration.String())
 	}
 
@@ -210,18 +210,18 @@ func Test_SemDoubleUnlink(t *testing.T) {
 func Test_isSemaphoreInitialized(t *testing.T) {
 	var sem Semaphore
 	if err := sem.Close(); err == nil {
-		t.Fatalf("Should have recived error: %v", err)
+		t.Fatalf("Should have received error: %v", err)
 	}
 	if _, err := sem.GetValue(); err == nil {
-		t.Fatalf("Should have recived error: %v", err)
+		t.Fatalf("Should have received error: %v", err)
 	}
 	if err := sem.Post(); err == nil {
-		t.Fatalf("Should have recived error: %v", err)
+		t.Fatalf("Should have received error: %v", err)
 	}
 	if err := sem.Wait(); err == nil {
-		t.Fatalf("Should have recived error: %v", err)
+		t.Fatalf("Should have received error: %v", err)
 	}
 	if err := sem.TryWait(); err == nil {
-		t.Fatalf("Should have recived error: %v", err)
+		t.Fatalf("Should have received error: %v", err)
 	}
 }
