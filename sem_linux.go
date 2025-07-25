@@ -1,6 +1,5 @@
 package semaphore
 
-
 // #cgo LDFLAGS: -pthread
 // #include <stdlib.h>
 // #include <fcntl.h>
