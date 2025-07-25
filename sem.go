@@ -9,6 +9,7 @@ package semaphore
 
 import (
 	"errors"
+	"math"
 	"syscall"
 	"time"
 	"unsafe"
@@ -33,6 +34,11 @@ import "C"
 type Semaphore struct {
 	sem  *C.sem_t //semaphore returned by sem_open
 	name string   //name of semaphore
+}
+
+func addCDuration(ts *C.struct_timespec, d time.Duration) {
+	ts.tv_sec = ts.tv_sec + C.long(int32(math.Floor(float64(d/time.Second))))
+	ts.tv_nsec = ts.tv_nsec + C.long(int32(d%time.Second))
 }
 
 func (s *Semaphore) isSemaphoreInitialized() (bool, error) {
@@ -122,17 +128,22 @@ func (s *Semaphore) TryWait() error {
 // TimedWait is the same as Wait(), except that d specifies a limit on the
 // amount of time that the call should block if the decrement cannot be
 // immediately performed.
+// It just uses the C implementation of sem_timedwait
+// https://pubs.opengroup.org/onlinepubs/009696699/functions/sem_timedwait.html
 func (s *Semaphore) TimedWait(d time.Duration) error {
-	if err := s.TryWait(); err == nil {
-		// success
-		return nil
+	if ok, err := s.isSemaphoreInitialized(); !ok {
+		return err
 	}
-	time.Sleep(d)
-	if err := s.TryWait(); err == nil {
-		// success
-		return nil
+
+	ts := C.struct_timespec{}
+	C.timespec_get(&ts, C.TIME_UTC)
+
+	addCDuration(&ts, d)
+	ret, err := C.sem_timedwait(s.sem, &ts)
+	if ret != 0 {
+		return err
 	}
-	return errors.New("The call timed out before the semaphore could be locked")
+	return nil
 }
 
 // Unlink removes the named semaphore. The semaphore name is removed immediately.

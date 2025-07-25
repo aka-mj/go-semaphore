@@ -21,7 +21,6 @@ func Test_Semaphore(t *testing.T) {
 	}
 }
 
-
 func Test_SemWait(t *testing.T) {
 	var sem Semaphore
 	sem.Open("/testsem", 0644, 1)
@@ -107,6 +106,50 @@ func Test_SemTimedWait_wait(t *testing.T) {
 	}
 }
 
+// When doing a TimedWait any release of the semaphore should allow the
+// waiting process to grab the semaphore.
+func Test_SemTimedWait_wait_with_short_gap(t *testing.T) {
+	var sem Semaphore
+	sem.Open("/testsem_wait2", 0644, 1)
+	sem.Wait()
+	v, _ := sem.GetValue()
+	fmt.Println(v)
+
+	end := make(chan error, 1)
+	semWait := make(chan time.Duration, 1)
+	go func() {
+		t1 := time.Now()
+		var sem2 Semaphore
+		sem2.Open("/testsem_wait2", 0644, 1)
+		end <- sem2.TimedWait(2 * time.Second)
+		semWait <- time.Since(t1)
+		sem2.Post()
+	}()
+
+	time.Sleep(500 * time.Millisecond)
+	sem.Post()
+	// If you do an immediate sem.Wait call you wouldn't allow another process to take the semaphore
+	// by doing a sleep even if it is a short sleep the semaphore can be taken by another process
+	time.Sleep(1 * time.Millisecond)
+	sem.Wait()
+	time.Sleep(1600 * time.Millisecond)
+	sem.Post()
+	err := <-end
+	semWaitDuration := <-semWait
+	if semWaitDuration < 500 * time.Millisecond {
+		t.Fatalf("Impossible we still slept for 500 Milliseconds prior to releasing semaphore: sem wait was %s", semWaitDuration.String())
+	}
+	if semWaitDuration > 550 * time.Millisecond {
+		t.Fatalf("It took too long to acquire semaphore. We still slept for 500 Milliseconds prior to releasing semaphore: sem wait was %s", semWaitDuration.String())
+	}
+
+	sem.Close()
+	sem.Unlink()
+	if err != nil {
+		t.Fatalf("Should not have timedout: %v", err)
+	}
+}
+
 func Test_SemTimedWait_timeout(t *testing.T) {
 	var sem Semaphore
 	sem.Open("/testsem_wait", 0644, 1)
@@ -182,5 +225,3 @@ func Test_isSemaphoreInitialized(t *testing.T) {
 		t.Fatalf("Should have recived error: %v", err)
 	}
 }
-
-
